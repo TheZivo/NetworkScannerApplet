@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+//Following are used for project specifically
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Threading;
+using System.Collections.Concurrent;
 
 namespace NetworkScanner
 {
@@ -10,12 +15,56 @@ namespace NetworkScanner
     {
         static void Main(string[] args)
         {
-            // The code provided will print ‘Hello World’ to the console.
-            // Press Ctrl+F5 (or go to Debug > Start Without Debugging) to run your app.
-            Console.WriteLine("Hello World!");
-            Console.ReadKey();
+            scanner("10.0.0");
+        }
 
-            // Go to http://aka.ms/dotnet-get-started-console to continue learning how to build a console app! 
+        static void scanner(string subnet)
+        {
+
+            Ping pingTest;
+            PingReply reply;
+            IPAddress addy;
+            IPHostEntry host;
+
+            //var found = new ConcurrentDictionary<string, string>();
+            //var notFound = new ConcurrentDictionary<string, string>();
+
+
+            Parallel.For(0, 256, (i) =>
+            {
+                string itSubnet = "." + i.ToString();
+                pingTest = new Ping();
+                reply = pingTest.Send(subnet + itSubnet, 300);
+
+                if (reply.Status == IPStatus.Success)
+                {
+                    try
+                    {
+                        addy = IPAddress.Parse(subnet + itSubnet);
+                        host = Dns.GetHostEntry(addy);
+                        //for form use textboxname.AppendText(subnet + itSubnet + host.hostname.tostring())
+                        Console.WriteLine(subnet + itSubnet + host.HostName.ToString());
+                        //found.TryAdd(itSubnet, addy.ToString());
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message + ": " + subnet + itSubnet);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine(subnet + itSubnet + " Inactive");
+                    //notFound.TryAdd(itSubnet, subnet + itSubnet);
+                }
+            });
+
+            Console.ReadLine();
+            //Console.WriteLine("Found the following hosts: ");
+            //foreach(var iterHost in found.OrderBy(x => x.Key).Select(x => x.Value))
+            //{
+            //    Console.WriteLine(iterHost);
+            //}
+            //Console.ReadLine();
         }
     }
 }
