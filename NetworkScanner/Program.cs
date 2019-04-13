@@ -26,16 +26,16 @@ namespace NetworkScanner
             IPAddress addy;
             IPHostEntry host;
 
-            //var found = new ConcurrentDictionary<string, string>();
-            //var notFound = new ConcurrentDictionary<string, string>();
-
+            var found = new ConcurrentDictionary<string, string>();
+            var notFound = new ConcurrentDictionary<string, string>();
+            
 
             Parallel.For(0, 256, (i) =>
             {
                 string itSubnet = "." + i.ToString();
                 pingTest = new Ping();
                 reply = pingTest.Send(subnet + itSubnet, 300);
-
+                
                 if (reply.Status == IPStatus.Success)
                 {
                     try
@@ -43,8 +43,8 @@ namespace NetworkScanner
                         addy = IPAddress.Parse(subnet + itSubnet);
                         host = Dns.GetHostEntry(addy);
                         //for form use textboxname.AppendText(subnet + itSubnet + host.hostname.tostring())
-                        Console.WriteLine(subnet + itSubnet + host.HostName.ToString());
-                        //found.TryAdd(itSubnet, addy.ToString());
+                        //Console.WriteLine(subnet + itSubnet + host.HostName.ToString());
+                        found.TryAdd(subnet + itSubnet, host.HostName.ToString());
                     }
                     catch (Exception e)
                     {
@@ -53,18 +53,18 @@ namespace NetworkScanner
                 }
                 else
                 {
-                    Console.WriteLine(subnet + itSubnet + " Inactive");
-                    //notFound.TryAdd(itSubnet, subnet + itSubnet);
+                    //Console.WriteLine(subnet + itSubnet + " Inactive");
+                    notFound.TryAdd(itSubnet, subnet + itSubnet);
                 }
             });
 
+            
+            Console.WriteLine("Found the following hosts: ");
+            foreach(KeyValuePair<string, string> kvp in found.OrderBy(x => x.Key))
+            {
+                Console.WriteLine(kvp.Key + " " + kvp.Value);
+            }
             Console.ReadLine();
-            //Console.WriteLine("Found the following hosts: ");
-            //foreach(var iterHost in found.OrderBy(x => x.Key).Select(x => x.Value))
-            //{
-            //    Console.WriteLine(iterHost);
-            //}
-            //Console.ReadLine();
         }
     }
 }
